@@ -1,0 +1,1869 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sakana Detailing — Premium Automotive Styling Workshop · Alsasua</title>
+    <meta name="description" content="Sakana Detailing: taller premium de detallado y styling de automóviles en Alsasua, Navarra. Tratamientos cerámicos, pulido de corrección, limpieza integral y tapicería.">
+    <meta name="keywords" content="detailing, coche, moto, pulido, cerámica, tapicería, Alsasua, Navarra, automotive, car detailing">
+    <meta property="og:title" content="Sakana Detailing — Premium Automotive Workshop">
+    <meta property="og:description" content="Precision. Craft. Obsession. Taller de detallado premium en Alsasua, Navarra.">
+    <meta property="og:type" content="website">
+
+    <!-- Google Fonts: Syne (display/mechanical) + JetBrains Mono (technical data) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,700;1,300&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        syne: ['Syne', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- GSAP Core + ScrollToPlugin + ScrollTrigger for bidirectional fluid animation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollToPlugin.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+    <style>
+        /* ─────────────────────────────────────────────
+           RESET & BASE
+        ───────────────────────────────────────────── */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --obs:   #080808;
+            --obs2:  #0e0e0e;
+            --chrome: #ffffff;
+            --chrome-60: rgba(255,255,255,0.6);
+            --chrome-30: rgba(255,255,255,0.3);
+            --chrome-10: rgba(255,255,255,0.08);
+            --chrome-05: rgba(255,255,255,0.04);
+            --border:    rgba(255,255,255,0.07);
+            --border-h:  rgba(255,255,255,0.22);
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            background: var(--obs);
+            color: var(--chrome);
+            font-family: 'JetBrains Mono', monospace;
+            overflow-x: hidden;
+            cursor: none;
+        }
+
+        ::selection { background: rgba(255,255,255,0.12); }
+
+        /* ─────────────────────────────────────────────
+           GRAIN OVERLAY — 5% cinematic texture
+        ───────────────────────────────────────────── */
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 9000;
+            opacity: 0.045;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+            background-size: 320px 320px;
+            animation: grain 0.4s steps(2) infinite;
+        }
+        @keyframes grain {
+            0%   { transform: translate(0, 0); }
+            25%  { transform: translate(-3px, 2px); }
+            50%  { transform: translate(2px, -3px); }
+            75%  { transform: translate(3px, 1px); }
+            100% { transform: translate(-1px, 3px); }
+        }
+
+        /* ─────────────────────────────────────────────
+           CARBON FIBER TEXTURE (CSS only, body bg layer)
+        ───────────────────────────────────────────── */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: -1;
+            background-image:
+                repeating-linear-gradient(45deg,  rgba(255,255,255,0.018) 0, rgba(255,255,255,0.018) 1px, transparent 1px, transparent 8px),
+                repeating-linear-gradient(-45deg, rgba(255,255,255,0.018) 0, rgba(255,255,255,0.018) 1px, transparent 1px, transparent 8px),
+                repeating-linear-gradient(0deg,   rgba(255,255,255,0.01)  0, rgba(255,255,255,0.01)  2px, transparent 2px, transparent 4px),
+                repeating-linear-gradient(90deg,  rgba(255,255,255,0.01)  0, rgba(255,255,255,0.01)  2px, transparent 2px, transparent 4px);
+        }
+
+        /* ─────────────────────────────────────────────
+           CUSTOM CURSOR
+        ───────────────────────────────────────────── */
+        #cursor-dot {
+            position: fixed;
+            width: 5px; height: 5px;
+            background: #fff;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%,-50%);
+            transition: opacity .2s, transform .15s;
+        }
+        #cursor-ring {
+            position: fixed;
+            width: 30px; height: 30px;
+            border: 1px solid rgba(255,255,255,0.45);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9998;
+            transform: translate(-50%,-50%);
+            transition: width .3s cubic-bezier(.16,1,.3,1),
+                        height .3s cubic-bezier(.16,1,.3,1),
+                        border-color .3s;
+        }
+        #cursor-ring.expand  { width: 56px; height: 56px; border-color: rgba(255,255,255,0.8); }
+        #cursor-dot.hide     { opacity: 0; }
+
+        @media (hover: none), (pointer: coarse) {
+            #cursor-dot, #cursor-ring {
+                display: none !important;
+            }
+            body, a, button, .svc-card, .nav-link, .nav-cta, .loc-block {
+                cursor: auto !important;
+            }
+        }
+
+        /* ─────────────────────────────────────────────
+           LOADING SCREEN
+           ───────────────────────────────────────────── */
+        #loading-screen {
+            position: fixed; inset: 0;
+            background: var(--obs);
+            z-index: 10000;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            gap: 0;
+            transition: opacity .9s ease, visibility .9s ease;
+        }
+        #loading-screen.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+
+        .loader-logo {
+            width: 88px; height: 88px;
+            object-fit: contain;
+            border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 36px;
+            animation: loader-beat 1.6s ease-in-out infinite;
+        }
+        @keyframes loader-beat {
+            0%,100% { opacity: .3; transform: scale(.94); }
+            50%      { opacity: 1;  transform: scale(1.04); }
+        }
+
+        .loader-bar-wrap {
+            width: 180px; height: 1px;
+            background: rgba(255,255,255,0.08);
+            overflow: hidden;
+        }
+        #loader-bar {
+            height: 100%; width: 0%;
+            background: rgba(255,255,255,0.75);
+            transition: width .25s ease;
+        }
+        .loader-label {
+            font-size: 0.5rem;
+            letter-spacing: .45em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.3);
+            margin-top: 14px;
+        }
+
+        /* ─────────────────────────────────────────────
+           FIXED NAVIGATION
+           ───────────────────────────────────────────── */
+        #main-nav {
+            position: fixed;
+            top: 0; left: 0; width: 100%;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 44px;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            background: rgba(8,8,8,0.35);
+            transition: background .5s, border-color .5s;
+        }
+        #main-nav.scrolled {
+            background: rgba(8,8,8,0.88);
+            border-bottom-color: rgba(255,255,255,0.13);
+        }
+
+        .nav-left {
+            display: flex; align-items: center; gap: 14px;
+        }
+        .nav-logo-img {
+            width: 50px; height: 50px;
+            object-fit: contain;
+            border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.14);
+            transition: transform .45s cubic-bezier(.16,1,.3,1), filter .3s;
+            filter: brightness(1.05);
+        }
+        .nav-logo-img:hover, .nav-left:hover .nav-logo-img { transform: rotate(12deg) scale(1.1); }
+
+        .nav-brand-wrap { line-height: 1; }
+        .nav-brand-name {
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: .82rem;
+            letter-spacing: .26em;
+            text-transform: uppercase;
+            display: block;
+        }
+        .nav-brand-sub {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 300;
+            font-size: .52rem;
+            letter-spacing: .42em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.4);
+            display: block;
+            margin-top: 4px;
+        }
+
+        .nav-links {
+            display: flex; gap: 38px; align-items: center;
+        }
+        .nav-link {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: .62rem;
+            font-weight: 400;
+            letter-spacing: .22em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.45);
+            text-decoration: none;
+            position: relative;
+            transition: color .3s;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -3px; left: 0;
+            width: 0; height: 1px;
+            background: #fff;
+            transition: width .35s cubic-bezier(.16,1,.3,1);
+        }
+        .nav-link:hover { color: #fff; }
+        .nav-link:hover::after { width: 100%; }
+
+        .nav-cta {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: .58rem;
+            letter-spacing: .28em;
+            text-transform: uppercase;
+            padding: 10px 24px;
+            border: 1px solid rgba(255,255,255,0.28);
+            color: #fff;
+            text-decoration: none;
+            transition: all .35s;
+            position: relative;
+            overflow: hidden;
+        }
+        .nav-cta::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: rgba(255,255,255,0.06);
+            transform: translateX(-100%);
+            transition: transform .35s cubic-bezier(.16,1,.3,1);
+        }
+        .nav-cta:hover { border-color: rgba(255,255,255,0.75); }
+        .nav-cta:hover::before { transform: translateX(0); }
+
+        /* ─────────────────────────────────────────────
+           HERO: SCROLL-DRIVEN CANVAS
+        ───────────────────────────────────────────── */
+        #hero-scroll-container {
+            position: relative;
+            height: 100vh;
+        }
+
+        #hero-sticky {
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        #hero-canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Vignette: radial dark edges */
+        .hero-vignette {
+            position: absolute; inset: 0;
+            background: radial-gradient(ellipse 80% 70% at 50% 50%,
+                transparent 30%,
+                rgba(8,8,8,0.55) 75%,
+                rgba(8,8,8,0.88) 100%);
+            pointer-events: none;
+        }
+
+        /* Hydrophobic micro-droplet vignette (subtle edge blur) */
+        .hero-droplet-vignette {
+            position: absolute; inset: 0;
+            pointer-events: none;
+            background:
+                radial-gradient(ellipse 40% 40% at  5%  5%, rgba(255,255,255,0.025) 0%, transparent 70%),
+                radial-gradient(ellipse 30% 30% at 95%  8%, rgba(255,255,255,0.02)  0%, transparent 70%),
+                radial-gradient(ellipse 25% 25% at 85% 92%, rgba(255,255,255,0.015) 0%, transparent 70%),
+                radial-gradient(ellipse 20% 20% at 10% 88%, rgba(255,255,255,0.02)  0%, transparent 70%);
+        }
+
+        /* Bottom gradient — blends hero into content */
+        .hero-bottom-fade {
+            position: absolute;
+            bottom: 0; left: 0; width: 100%; height: 32%;
+            background: linear-gradient(to bottom, transparent, #080808);
+            pointer-events: none;
+        }
+
+        /* Hero text overlay */
+        .hero-text {
+            position: absolute;
+            bottom: 9%;
+            left: 50%; transform: translateX(-50%);
+            text-align: center;
+            width: 90%; max-width: 960px;
+            pointer-events: none;
+        }
+        .hero-eyebrow {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: .58rem;
+            letter-spacing: .5em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.38);
+            margin-bottom: 18px;
+            display: block;
+        }
+        .hero-h1 {
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: clamp(3.2rem, 9vw, 7.5rem);
+            line-height: .9;
+            letter-spacing: -.025em;
+            text-transform: uppercase;
+            text-shadow: 0 2px 80px rgba(0,0,0,0.9);
+            margin-bottom: 22px;
+        }
+        .hero-h1 em { font-style: normal; color: rgba(255,255,255,0.28); }
+        .hero-tagline {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: clamp(.52rem, 1.1vw, .72rem);
+            letter-spacing: .38em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.32);
+        }
+
+        /* Scroll indicator */
+        #scroll-ind {
+            position: absolute;
+            bottom: 38px; right: 48px;
+            display: flex; flex-direction: column;
+            align-items: center; gap: 9px;
+            transition: opacity .5s;
+        }
+        .scroll-ind-txt {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: .48rem;
+            letter-spacing: .35em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.28);
+            writing-mode: vertical-rl;
+        }
+        .scroll-ind-line {
+            width: 1px; height: 52px;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.55), transparent);
+            animation: scroll-line 2.2s ease-in-out infinite;
+        }
+        @keyframes scroll-line {
+            0%,100% { opacity: .3; transform: scaleY(1); }
+            50%      { opacity: 1;  transform: scaleY(1.08); }
+        }
+
+        /* Frame progress bar */
+        #frame-bar {
+            position: absolute;
+            bottom: 0; left: 0;
+            height: 1px;
+            width: 0%;
+            background: rgba(255,255,255,0.45);
+            transition: width .08s linear;
+        }
+
+        /* ─────────────────────────────────────────────
+           SECTION SCAFFOLDING
+        ───────────────────────────────────────────── */
+        .section-wrap {
+            max-width: 1380px;
+            margin: 0 auto;
+            padding: 120px 52px;
+        }
+
+        .section-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: .58rem;
+            letter-spacing: .52em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.28);
+            display: flex; align-items: center; gap: 18px;
+            margin-bottom: 64px;
+        }
+        .section-label::before {
+            content: '';
+            display: inline-block;
+            width: 26px; height: 1px;
+            background: rgba(255,255,255,0.28);
+        }
+
+        /* Thin decorative horizontal rule */
+        .h-rule {
+            width: 100%; height: 1px;
+            background: linear-gradient(to right, transparent, rgba(255,255,255,0.1) 20%, rgba(255,255,255,0.1) 80%, transparent);
+        }
+
+        /* ─────────────────────────────────────────────
+           SERVICES SECTION
+        ───────────────────────────────────────────── */
+        #services { background: var(--obs); position: relative; }
+
+        .services-header {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 48px;
+            align-items: end;
+            margin-bottom: 72px;
+        }
+
+        .services-h2 {
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: clamp(2.8rem, 5vw, 5rem);
+            line-height: .92;
+            text-transform: uppercase;
+            letter-spacing: -.03em;
+        }
+
+        .services-p {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: .82rem;
+            line-height: 2;
+            color: rgba(255,255,255,0.55);
+            max-width: 360px;
+            margin-left: auto;
+        }
+
+        /* IMAGE CARD GRID — Asymmetric layout */
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 24px;
+        }
+
+        /* ── IMAGE-DRIVEN SERVICE CARD ── */
+        .svc-card {
+            position: relative;
+            overflow: hidden;
+            aspect-ratio: 4 / 3;
+            cursor: none;
+        }
+        .svc-card:nth-child(1) { grid-column: 1 / 8; }
+        .svc-card:nth-child(2) { grid-column: 8 / 13; }
+        .svc-card:nth-child(3) { grid-column: 1 / 6; }
+        .svc-card:nth-child(4) { grid-column: 6 / 13; }
+
+        /* Background image layer */
+        .svc-card-bg {
+            position: absolute; inset: 0;
+            background-size: cover;
+            background-position: center;
+            transform: scale(1.04);
+            transition: transform .8s cubic-bezier(.16,1,.3,1), filter .8s;
+            filter: brightness(.55) contrast(1.05);
+        }
+        .svc-card:hover .svc-card-bg {
+            transform: scale(1.1);
+            filter: brightness(.38) contrast(1.08);
+        }
+
+        /* Dark gradient bottom scrim */
+        .svc-card::after {
+            content: '';
+            position: absolute; inset: 0;
+            background:
+                linear-gradient(to top,  rgba(8,8,8,0.92) 0%,  rgba(8,8,8,0.1)  55%, transparent 100%),
+                linear-gradient(to right, rgba(8,8,8,0.3) 0%, transparent 60%);
+            pointer-events: none;
+            transition: opacity .5s;
+        }
+
+        /* Chrome sheen sweep on hover */
+        .svc-card-sheen {
+            position: absolute; inset: 0;
+            background: linear-gradient(
+                108deg,
+                transparent 0%,
+                rgba(255,255,255,0.035) 35%,
+                rgba(255,255,255,0.09) 50%,
+                rgba(255,255,255,0.035) 65%,
+                transparent 100%
+            );
+            transform: translateX(-120%) skewX(-18deg);
+            transition: transform .7s cubic-bezier(.16,1,.3,1);
+            pointer-events: none;
+            z-index: 3;
+        }
+        .svc-card:hover .svc-card-sheen { transform: translateX(140%) skewX(-18deg); }
+
+        /* Title overlay */
+        .svc-title {
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            padding: 36px 40px;
+            z-index: 2;
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: clamp(1.5rem, 2.6vw, 2.4rem);
+            line-height: 1.05;
+            text-transform: uppercase;
+            letter-spacing: -.02em;
+            color: #fff;
+            transition: letter-spacing .45s, padding .45s;
+        }
+        .svc-card:hover .svc-title {
+            letter-spacing: .01em;
+            padding-bottom: 44px;
+        }
+
+        /* Card number tag */
+        .svc-num {
+            position: absolute;
+            top: 28px; right: 28px;
+            z-index: 2;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: .5rem;
+            letter-spacing: .45em;
+            color: rgba(255,255,255,0.35);
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 4px 10px;
+        }
+
+        /* ─────────────────────────────────────────────
+           LOCATION & HOURS — LUXURY SPEC SHEET
+        ───────────────────────────────────────────── */
+        #location {
+            background: var(--obs);
+            border-top: 1px solid var(--border);
+            position: relative;
+        }
+
+        .spec-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 100px;
+            align-items: start;
+            position: relative;
+        }
+
+        /* Vertical center divider line */
+        .spec-grid::before {
+            content: '';
+            position: absolute;
+            left: 50%; top: 0; bottom: 0; width: 1px;
+            background: linear-gradient(to bottom,
+                transparent 0%,
+                rgba(255,255,255,0.08) 20%,
+                rgba(255,255,255,0.08) 80%,
+                transparent 100%);
+        }
+
+        .spec-col-h2 {
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: clamp(2.2rem, 4vw, 3.8rem);
+            text-transform: uppercase;
+            letter-spacing: -.03em;
+            line-height: .92;
+            margin-bottom: 52px;
+        }
+
+        /* Location blocks */
+        .loc-block {
+            border: 1px solid var(--border);
+            padding: 36px 38px;
+            margin-bottom: 2px;
+            position: relative;
+            transition: border-color .4s;
+        }
+        .loc-block:hover { border-color: var(--border-h); }
+
+        .loc-eyebrow {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: .75rem;
+            letter-spacing: .5em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.6);
+            display: block;
+            margin-bottom: 18px;
+        }
+
+        .loc-address {
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: clamp(1.8rem, 3.5vw, 3rem);
+            line-height: 1.25;
+            color: #fff;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .loc-address .arrow-ext {
+            font-size: 1.5rem;
+            opacity: 0;
+            transform: translateX(-6px);
+            transition: opacity .35s, transform .35s;
+            margin-left: 12px;
+        }
+        .loc-address:hover {
+            color: #fff;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.35);
+        }
+        .loc-address:hover .arrow-ext { opacity: 1; transform: translateX(0); }
+
+        /* Hours spec table */
+        .hours-table { width: 100%; }
+
+        .hours-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 30px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.055);
+            transition: border-color .35s;
+        }
+        .hours-row:first-child { border-top: 1px solid rgba(255,255,255,0.055); }
+        .hours-row:hover { border-bottom-color: rgba(255,255,255,0.18); }
+
+        .hours-day-col { flex: 1; }
+        .hours-day {
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: clamp(1.35rem, 2.2vw, 1.8rem);
+            letter-spacing: -.01em;
+            text-transform: uppercase;
+            color: #fff;
+            display: block;
+            line-height: 1.2;
+        }
+        .hours-badge {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: .52rem;
+            letter-spacing: .32em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.45);
+            border: 1px solid rgba(255,255,255,0.22);
+            padding: 4px 11px;
+            display: inline-block;
+            margin-top: 10px;
+        }
+
+        .hours-time-col { text-align: right; }
+        .hours-time {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: clamp(1.05rem, 1.6vw, 1.35rem);
+            font-weight: 500;
+            color: #fff;
+            display: block;
+            line-height: 1.85;
+            letter-spacing: .04em;
+        }
+        .hours-closed { color: rgba(255,255,255,0.18); }
+
+        /* Note block */
+        .spec-note {
+            margin-top: 40px;
+            padding: 24px 28px;
+            border: 1px solid var(--border);
+        }
+        .spec-note-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: .62rem;
+            letter-spacing: .48em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.45);
+            display: block;
+            margin-bottom: 10px;
+        }
+        .spec-note-txt {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: .78rem;
+            line-height: 1.85;
+            color: rgba(255,255,255,0.55);
+        }
+
+        /* ─────────────────────────────────────────────
+           TESTIMONIALS / MARQUEE CAROUSEL
+        ───────────────────────────────────────────── */
+        .marquee-track {
+            display: flex;
+            width: max-content;
+            animation: marquee-scroll 45s linear infinite;
+        }
+        .marquee-track:hover {
+            animation-play-state: paused;
+        }
+        .marquee-group {
+            display: flex;
+            gap: 24px;
+            padding-right: 24px;
+        }
+        @keyframes marquee-scroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        .review-card {
+            width: 380px;
+            flex-shrink: 0;
+            background: rgba(255, 255, 255, 0.015);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            padding: 2rem;
+            border-radius: 2px;
+            transition: border-color 0.4s, background-color 0.4s;
+            white-space: normal;
+        }
+        .review-card:hover {
+            border-color: rgba(255, 255, 255, 0.22);
+            background: rgba(255, 255, 255, 0.035);
+        }
+
+        .review-author {
+            font-family: 'Syne', sans-serif;
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: -0.01em;
+        }
+
+        .review-stars {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: #fff;
+            letter-spacing: 2px;
+        }
+
+        .review-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.76rem;
+            line-height: 1.8;
+            color: rgba(255, 255, 255, 0.55);
+        }
+
+        /* ─────────────────────────────────────────────
+           FOOTER / CONTACT ZONE
+        ───────────────────────────────────────────── */
+        #contact {
+            border-top: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+        #contact::before {
+            content: '';
+            position: absolute;
+            bottom: -280px; left: -280px;
+            width: 720px; height: 720px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,255,255,0.014) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .contact-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 80px;
+            align-items: start;
+            margin-bottom: 96px;
+        }
+
+        .contact-h2 {
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: clamp(2.8rem, 5vw, 4.8rem);
+            text-transform: uppercase;
+            letter-spacing: -.03em;
+            line-height: .92;
+        }
+
+        .contact-sub {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: .82rem;
+            line-height: 2;
+            color: rgba(255,255,255,0.55);
+            margin-top: 26px;
+            max-width: 400px;
+        }
+
+        .footer-logo-wrap {
+            margin-top: 60px;
+            display: flex; align-items: center; gap: 16px;
+        }
+        .footer-logo {
+            width: 72px; height: 72px;
+            object-fit: contain;
+            border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.1);
+            opacity: .55;
+            transition: opacity .4s, transform .4s;
+        }
+        .footer-logo:hover { opacity: .9; transform: rotate(8deg); }
+
+        /* Contact action buttons */
+        .contact-actions { display: flex; flex-direction: column; gap: 14px; }
+
+        /* WhatsApp */
+        .btn-wa {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            padding: 24px 32px;
+            border: 1px solid rgba(255,255,255,0.22);
+            text-decoration: none;
+            color: #fff;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: .82rem;
+            letter-spacing: .18em;
+            text-transform: uppercase;
+            position: relative;
+            overflow: hidden;
+            transition: border-color .4s;
+        }
+        .btn-wa::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: rgba(255,255,255,0.05);
+            transform: translateX(-100%);
+            transition: transform .4s cubic-bezier(.16,1,.3,1);
+        }
+        .btn-wa:hover { border-color: rgba(255,255,255,0.7); }
+        .btn-wa:hover::before { transform: translateX(0); }
+        .btn-wa-icon { width: 22px; height: 22px; flex-shrink: 0; }
+        .btn-wa-num { margin-left: auto; font-size: .68rem; opacity: .55; }
+
+        /* Email / Instagram */
+        .btn-line {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            padding: 22px 32px;
+            border: 1px solid rgba(255,255,255,0.1);
+            text-decoration: none;
+            color: rgba(255,255,255,0.7);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: .82rem;
+            letter-spacing: .12em;
+            transition: color .4s, border-color .4s;
+        }
+        .btn-line:hover { color: #fff; border-color: rgba(255,255,255,0.35); }
+        .btn-line svg { flex-shrink: 0; }
+
+        /* Footer bar */
+        .footer-bar {
+            border-top: 1px solid rgba(255,255,255,0.045);
+            padding-top: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .footer-copy, .footer-loc {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: .68rem;
+            letter-spacing: .2em;
+            color: rgba(255,255,255,0.3);
+        }
+
+        /* ─────────────────────────────────────────────
+           STAGGERED SCROLL ANIMATIONS
+        ───────────────────────────────────────────── */
+        .anim {
+            opacity: 0;
+            transform: translateY(28px);
+            transition: opacity .85s cubic-bezier(.16,1,.3,1),
+                        transform .85s cubic-bezier(.16,1,.3,1);
+        }
+        .anim.visible { opacity: 1; transform: translateY(0); }
+        .d1 { transition-delay: .08s; }
+        .d2 { transition-delay: .16s; }
+        .d3 { transition-delay: .24s; }
+        .d4 { transition-delay: .32s; }
+        .d5 { transition-delay: .40s; }
+        .d6 { transition-delay: .48s; }
+
+        /* ─────────────────────────────────────────────
+           RESPONSIVE — MOBILE
+        ───────────────────────────────────────────── */
+        @media (max-width: 880px) {
+            .section-wrap { padding: 80px 22px; }
+            #main-nav { padding: 11px 22px; }
+            .nav-links { display: none; }
+            .services-header { grid-template-columns: 1fr; }
+            .services-p { margin-left: 0; }
+            .svc-card:nth-child(1),
+            .svc-card:nth-child(2),
+            .svc-card:nth-child(3),
+            .svc-card:nth-child(4) { grid-column: 1 / 13; grid-row: auto; }
+            .spec-grid { grid-template-columns: 1fr; gap: 60px; }
+            .spec-grid::before { display: none; }
+            .contact-grid { grid-template-columns: 1fr; gap: 48px; }
+            .footer-bar { flex-direction: column; gap: 14px; text-align: center; }
+            #scroll-ind { right: 22px; }
+            .hero-h1 { font-size: clamp(2.8rem,13vw,5rem); }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════
+     LOADING SCREEN
+══════════════════════════════════════════════ -->
+<div id="loading-screen">
+    <img src="MULTIMEDIA/592519046_17850217770604656_4832232778873236208_n.jpg"
+         alt="Sakana Detailing" class="loader-logo">
+    <div class="loader-bar-wrap">
+        <div id="loader-bar"></div>
+    </div>
+    <p class="loader-label" id="loader-label">Iniciando — 0%</p>
+</div>
+
+<!-- CUSTOM CURSOR -->
+<div id="cursor-dot"></div>
+<div id="cursor-ring"></div>
+
+<!-- ══════════════════════════════════════════════
+     FIXED NAVIGATION
+══════════════════════════════════════════════ -->
+<header>
+    <nav id="main-nav" aria-label="Navegación principal de Sakana Detailing">
+        <!-- LOGO — TOP LEFT -->
+        <a href="#hero-scroll-container" class="nav-left group cursor-none" style="text-decoration: none; color: inherit;" aria-label="Volver al inicio">
+            <img src="MULTIMEDIA/592519046_17850217770604656_4832232778873236208_n.jpg"
+                 alt="Sakana Detail logo"
+                 class="nav-logo-img"
+                 id="nav-logo-img">
+            <div class="nav-brand-wrap">
+                <span class="nav-brand-name group-hover:text-white/80 transition-colors duration-300">Sakana</span>
+                <span class="nav-brand-sub group-hover:text-white/60 transition-colors duration-300">Detailing Workshop</span>
+            </div>
+        </a>
+
+        <!-- NAV LINKS -->
+        <div class="nav-links" role="list">
+            <a href="#services" class="nav-link" role="listitem">Servicios</a>
+            <a href="#hours" class="nav-link" role="listitem">Horarios</a>
+            <a href="#location" class="nav-link" role="listitem">Ubicación</a>
+            <a href="#testimonials" class="nav-link" role="listitem">Reseñas</a>
+            <a href="#contact"  class="nav-link" role="listitem">Contacto</a>
+        </div>
+
+        <!-- CTA -->
+        <a href="https://wa.me/34680765314"
+           class="nav-cta"
+           target="_blank"
+           rel="noopener noreferrer"
+           id="nav-cta-btn"
+           aria-label="Reservar cita vía WhatsApp">
+            Reservar cita
+        </a>
+    </nav>
+</header>
+
+<!-- ══════════════════════════════════════════════
+     HERO: SCROLL-DRIVEN CANVAS ANIMATION & SLOGAN
+══════════════════════════════════════════════ -->
+<div id="hero-scroll-container" aria-hidden="true" style="height:260vh">
+    <div id="hero-sticky">
+        <canvas id="hero-canvas" aria-label="Animación de presentación de Sakana Detailing"></canvas>
+
+        <!-- Overlays -->
+        <div class="hero-vignette"></div>
+        <div class="hero-droplet-vignette"></div>
+        <div class="hero-bottom-fade"></div>
+
+        <!-- Hero text with Large Authoritative Slogan -->
+        <div class="hero-text flex flex-col items-center justify-center">
+            <span class="hero-eyebrow">Automotive Detailing — Alsasua, Navarra</span>
+            <h1 class="hero-h1">
+                Sakana<br>
+                <em>Detailing</em>
+            </h1>
+            <div class="h-rule my-6 opacity-30"></div>
+            <p class="font-syne font-extrabold text-[clamp(1.5rem,4vw,3.5rem)] uppercase leading-none tracking-tight text-white/90 drop-shadow-[0_2px_20px_rgba(0,0,0,0.8)]">
+                Cada detalle importa
+            </p>
+        </div>
+
+        <!-- Scroll indicator -->
+        <div id="scroll-ind" aria-hidden="true">
+            <span class="scroll-ind-txt">Scroll</span>
+            <div class="scroll-ind-line"></div>
+        </div>
+
+        <!-- Frame progress bar -->
+        <div id="frame-bar" aria-hidden="true"></div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SERVICES SECTION (Minimal Grid, Titles & Images Only)
+══════════════════════════════════════════════ -->
+<section id="services" aria-labelledby="services-heading">
+    <div class="section-wrap">
+        <div class="section-label anim"><span>// 01 — Servicios</span></div>
+        <div class="services-header">
+            <h2 class="services-h2 anim d1" id="services-heading">Excelencia<br>en cada<br>detalle</h2>
+            <p class="services-p anim d2">Cada vehículo es tratado como una obra de arte. Técnica de precisión y pasión artesanal para resultados que superan el acabado de fábrica. Sin compromisos.</p>
+        </div>
+        <div class="services-grid">
+
+            <!-- 1: Limpieza -->
+            <article class="svc-card anim d1" id="svc-limpieza">
+                <div class="svc-card-bg" style="background-image:url('MULTIMEDIA/Limpieza integral detallada.jpg')"></div>
+                <div class="svc-card-sheen"></div>
+                <span class="svc-num">001</span>
+                <h3 class="svc-title">Limpieza Integral<br>Detallada</h3>
+            </article>
+
+            <!-- 2: Pulido -->
+            <article class="svc-card anim d2" id="svc-pulido">
+                <div class="svc-card-bg" style="background-image:url('MULTIMEDIA/Pulido de corrección de pintura.jpg')"></div>
+                <div class="svc-card-sheen"></div>
+                <span class="svc-num">002</span>
+                <h3 class="svc-title">Pulido de Corrección<br>de Pintura</h3>
+            </article>
+
+            <!-- 3: Cerámicos -->
+            <article class="svc-card anim d3" id="svc-ceramico">
+                <div class="svc-card-bg" style="background-image:url('MULTIMEDIA/Tratamientos cerámicos.jpg')"></div>
+                <div class="svc-card-sheen"></div>
+                <span class="svc-num">003</span>
+                <h3 class="svc-title">Tratamientos<br>Cerámicos</h3>
+            </article>
+
+            <!-- 4: Tapicería -->
+            <article class="svc-card anim d4" id="svc-tapiceria">
+                <div class="svc-card-bg" style="background-image:url('MULTIMEDIA/Tapicería.jpg')"></div>
+                <div class="svc-card-sheen"></div>
+                <span class="svc-num">004</span>
+                <h3 class="svc-title">Tapicería</h3>
+            </article>
+
+        </div>
+    </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     HOURS MATRIX SECTION (Technical Matrix Grid)
+══════════════════════════════════════════════ -->
+<section id="hours" aria-labelledby="hours-heading" class="border-t border-[var(--border)] relative bg-[var(--obs)]">
+    <div class="section-wrap">
+        <div class="section-label anim">
+            <span>// 02 — Horarios</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 items-start">
+            <!-- LEFT: Heading and Note -->
+            <div>
+                <h2 class="spec-col-h2 anim d1" id="hours-heading">
+                    Matriz de<br>
+                    horarios
+                </h2>
+                <div class="spec-note anim d2 mt-8">
+                    <span class="spec-note-label">Nota del taller</span>
+                    <p class="spec-note-txt">
+                        Recomendamos concertar cita previa para garantizar
+                        una atención óptima y personalizada.
+                        Contacta por WhatsApp para consultas y presupuestos.
+                    </p>
+                </div>
+            </div>
+
+            <!-- RIGHT: Hours Table -->
+            <div class="hours-table anim d2" role="table" aria-label="Horarios del taller">
+                <div class="hours-row" role="row">
+                    <div class="hours-day-col" role="cell">
+                        <span class="hours-day">Lunes a Jueves</span>
+                    </div>
+                    <div class="hours-time-col" role="cell">
+                        <span class="hours-time">08:30 — 13:30</span>
+                        <span class="hours-time">14:30 — 17:30</span>
+                    </div>
+                </div>
+
+                <div class="hours-row" role="row">
+                    <div class="hours-day-col" role="cell">
+                        <span class="hours-day">Viernes</span>
+                        <span class="hours-badge">Jornada Intensiva</span>
+                    </div>
+                    <div class="hours-time-col" role="cell">
+                        <span class="hours-time">08:00 — 16:00</span>
+                    </div>
+                </div>
+
+                <div class="hours-row" role="row">
+                    <div class="hours-day-col" role="cell">
+                        <span class="hours-day hours-closed">Sábado — Domingo</span>
+                    </div>
+                    <div class="hours-time-col" role="cell">
+                        <span class="hours-time hours-closed">Cerrado</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     LOCATION SECTION ("Dónde encontrarnos")
+══════════════════════════════════════════════ -->
+<section id="location" aria-labelledby="location-heading" class="border-t border-[var(--border)] relative bg-[var(--obs)]">
+    <div class="section-wrap flex flex-col gap-12">
+        <div class="section-label anim">
+            <span>// 03 — Ubicación</span>
+        </div>
+        
+        <!-- Spatial Composition: Clean Vertical Flexbox with Generous 2.5rem Gap to Avoid Text Overlap -->
+        <div class="flex flex-col gap-10 anim d1">
+            <h2 class="font-syne font-extrabold text-[clamp(2.8rem,6vw,5.5rem)] uppercase leading-[1.0] tracking-tight text-white mb-0" id="location-heading">
+                Dónde<br>encontrarnos
+            </h2>
+            
+            <div class="flex flex-col gap-4">
+                <span class="loc-eyebrow" style="color: rgba(255,255,255,0.45); font-size: 0.7rem; letter-spacing: 0.35em; text-transform: uppercase;">Dirección del taller</span>
+                <div>
+                    <a href="https://maps.app.goo.gl/MGENyYSmTVQw5WGy8" target="_blank" rel="noopener noreferrer" class="loc-address" id="maps-link">
+                        Polígono Ibarrea 1, Alsasua
+                        <span class="arrow-ext" aria-hidden="true">→</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Coordinates and Map Widget (Stacked on mobile, 3-column grid on desktop for clean visual separating) -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-10 items-start anim d3 mt-4">
+            <!-- Info Cards (1/3 Width on Desktop) -->
+            <div class="flex flex-col gap-6 lg:col-span-1">
+                <!-- Coordenadas Block -->
+                <div class="loc-block" style="padding: 28px 38px; border: 1px solid var(--border); background: rgba(255,255,255,0.01);">
+                    <span class="loc-eyebrow" style="color: rgba(255,255,255,0.5); font-size: 0.7rem; tracking: 0.3em; margin-bottom: 12px; display: block;">Coordenadas</span>
+                    <div style="font-family:'JetBrains Mono',monospace; font-size:.7rem;
+                                letter-spacing:.18em; color:rgba(255,255,255,0.35);
+                                line-height:2.2; text-transform:uppercase;">
+                        42°54'N — 2°10'O<br>
+                        Alsasua — Altsasu, Navarra<br>
+                        España
+                    </div>
+                </div>
+
+                <!-- Acceso Block -->
+                <div class="loc-block flex items-center justify-between" style="padding: 24px 38px; background: rgba(255,255,255,0.01);">
+                    <div>
+                        <span class="loc-eyebrow" style="color: rgba(255,255,255,0.5); font-size: 0.7rem; tracking: 0.3em; margin-bottom: 4px; display: block;">Acceso</span>
+                        <div style="font-size: .78rem; color: rgba(255,255,255,0.45); font-family: 'JetBrains Mono'; line-height: 1.6;">
+                            Fácil acceso directo desde la autovía A-1 (Salida Alsasua/Ibarrea)
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Premium Dark Sat Vector Map Mockup (2/3 Width on Desktop) -->
+            <div class="lg:col-span-2 aspect-[16/9] border border-[var(--border)] bg-[#0d0d0d] overflow-hidden relative group" style="border-radius: 2px;">
+                <!-- Radial Grid Map Lines -->
+                <div class="absolute inset-0 opacity-20 pointer-events-none" style="background-image: radial-gradient(circle, rgba(255,255,255,0.15) 1px, transparent 1px); background-size: 24px 24px;"></div>
+                
+                <!-- Styled vector highways representing Autovía A-1 junction (Strategic automotive workshop aesthetic) -->
+                <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <!-- Highway path A-1 -->
+                    <div class="absolute w-[120%] h-[2px] bg-white/10 rotate-[22deg]" style="top: 45%;"></div>
+                    <div class="absolute w-[120%] h-[2px] bg-white/5 rotate-[24deg]" style="top: 47%;"></div>
+                    
+                    <!-- Workshop entry route -->
+                    <div class="absolute w-[2px] h-[90%] bg-white/15 left-[42%]"></div>
+                    <div class="absolute w-[40px] h-[2px] bg-white/20 left-[42%]" style="top: 54%;"></div>
+                    
+                    <!-- Radar pulse at workshop location -->
+                    <div class="absolute left-[42%] top-[54%] -translate-x-1/2 -translate-y-1/2 flex items-center justify-center">
+                        <span class="absolute inline-flex h-12 w-12 rounded-full bg-white opacity-20 animate-ping" style="animation-duration: 2.5s;"></span>
+                        <span class="absolute inline-flex h-6 w-6 rounded-full bg-white opacity-40 animate-ping"></span>
+                        <span class="relative inline-flex rounded-full h-3 w-3 bg-white shadow-[0_0_10px_#fff]"></span>
+                    </div>
+                    
+                    <!-- Map Labels -->
+                    <span class="absolute left-[48%] top-[51%] text-[9px] uppercase tracking-[0.25em] font-mono text-white" style="font-weight: 700;">SAKANA DETAILING</span>
+                    <span class="absolute left-[15%] top-[30%] text-[8px] uppercase tracking-[0.2em] font-mono text-white/30">Autovía del Norte (A-1)</span>
+                    <span class="absolute left-[48%] top-[80%] text-[8px] uppercase tracking-[0.2em] font-mono text-white/30">Alsasua Ibarrea</span>
+                </div>
+                
+                <!-- Glossy light sheen sweep -->
+                <div class="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/5 to-white/0 pointer-events-none"></div>
+                
+                <!-- Map Hover Call-To-Action Overlay -->
+                <a href="https://maps.app.goo.gl/MGENyYSmTVQw5WGy8" target="_blank" rel="noopener noreferrer" class="absolute inset-0 bg-black/75 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-300 backdrop-blur-[2px]" style="text-decoration: none;">
+                    <span class="border border-white/40 px-6 py-3 text-[10px] uppercase tracking-[0.3em] text-white font-mono bg-black/40 hover:border-white hover:bg-black/60 transition-all duration-300" style="letter-spacing: 0.35em;">
+                        Abrir en Google Maps
+                    </span>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     TESTIMONIALS SECTION ("Reseñas")
+══════════════════════════════════════════════ -->
+<section id="testimonials" aria-labelledby="testimonials-heading" class="border-t border-[var(--border)] relative bg-[var(--obs)] py-20 overflow-hidden">
+    <div class="section-wrap">
+        <!-- Section label -->
+        <div class="section-label anim">
+            <span>// 04 — Reseñas</span>
+        </div>
+
+        <!-- Headline & Rating Badge Stack -->
+        <div class="flex flex-col gap-4 mb-16 anim d1">
+            <h2 class="font-syne font-extrabold text-[clamp(2.8rem,5.5vw,4.8rem)] uppercase leading-none tracking-tight text-white mb-0" id="testimonials-heading">
+                Reseñas
+            </h2>
+            <div class="flex items-center gap-4">
+                <span class="font-mono text-xl font-bold text-white tracking-widest">4.9 / 5.0</span>
+                <div class="flex items-center text-white gap-1" aria-label="5 estrellas de valoración">
+                    <!-- 5 sharp white stars SVG -->
+                    <svg class="w-5 h-5 text-white fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                    <svg class="w-5 h-5 text-white fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                    <svg class="w-5 h-5 text-white fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                    <svg class="w-5 h-5 text-white fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                    <svg class="w-5 h-5 text-white fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                </div>
+                <span class="font-mono text-xs uppercase tracking-widest text-white/40">Opiniones en Google</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Marquee Slider Container (Edge-to-Edge) -->
+    <div class="w-full overflow-hidden py-4 anim d2">
+        <div class="marquee-track">
+            <!-- GROUP A -->
+            <div class="marquee-group">
+                <!-- Card 1 -->
+                <div class="review-card">
+                    <div class="flex justify-between items-start mb-6">
+                        <span class="review-author">Nekane Etxarri</span>
+                        <div class="review-stars" aria-label="5 estrellas">★★★★★</div>
+                    </div>
+                    <p class="review-text">"Muy buen trabajo, el coche ha quedado perfecto. En mi caso lo he llevado sobre todo por problema de malos olores y he quedado muy contenta."</p>
+                </div>
+                <!-- Card 2 -->
+                <div class="review-card">
+                    <div class="flex justify-between items-start mb-6">
+                        <span class="review-author">Rhizlane Benhamou</span>
+                        <div class="review-stars" aria-label="5 estrellas">★★★★★</div>
+                    </div>
+                    <p class="review-text">"Muy profesional, nos ha hecho limpieza y pulido al coche y ha ido genial, estamos encantados con los resultados. Muy amable y buena persona. Recomendadisimo."</p>
+                </div>
+                <!-- Card 3 -->
+                <div class="review-card">
+                    <div class="flex justify-between items-start mb-6">
+                        <span class="review-author">Xume Taberna</span>
+                        <div class="review-stars" aria-label="5 estrellas">★★★★★</div>
+                    </div>
+                    <p class="review-text">"Un trato excelente y profesional."</p>
+                </div>
+                <!-- Card 4 -->
+                <div class="review-card">
+                    <div class="flex justify-between items-start mb-6">
+                        <span class="review-author">javier gil casado</span>
+                        <div class="review-stars" aria-label="5 estrellas">★★★★★</div>
+                    </div>
+                    <p class="review-text">"Un trato excelente y un trabajo espectacular han dejado mi coche como un espejo."</p>
+                </div>
+                <!-- Card 5 -->
+                <div class="review-card">
+                    <div class="flex justify-between items-start mb-6">
+                        <span class="review-author">Asier Garcia</span>
+                        <div class="review-stars" aria-label="5 estrellas">★★★★★</div>
+                    </div>
+                    <p class="review-text">"Dena prineran. Todo perfecto! Yo volveré a llevar a hacer más cosas que hay que cuidarlo! 🏎️"</p>
+                </div>
+                <!-- Card 6 -->
+                <div class="review-card">
+                    <div class="flex justify-between items-start mb-6">
+                        <span class="review-author">Mikel Pereira</span>
+                        <div class="review-stars" aria-label="5 estrellas">★★★★★</div>
+                    </div>
+                    <p class="review-text">"Sakana Detail IMPRESIONANTE COMO HA QUEDADO MI t4 del 2000, ha quedado nueva, asientos, tapicería, muchas gracias por el servicio, la habéis rejuvenecido, MUY RECOMENDABLE."</p>
+                </div>
+                <!-- Card 7 -->
+                <div class="review-card">
+                    <div class="flex justify-between items-start mb-6">
+                        <span class="review-author">Juan Mari Ruiz</span>
+                        <div class="review-stars" aria-label="4 estrellas">★★★★☆</div>
+                    </div>
+                    <p class="review-text">"Excelente atención y cuidado en los detalles."</p>
+                </div>
+            </div>
+
+            <!-- GROUP B (Duplicates to create seamless infinite loop) -->
+            <div class="marquee-group">
+                <!-- Card 1 -->
+                <div class="review-card">
+                    <div class="flex justify-between items-start mb-6">
+                        <span class="review-author">Nekane Etxarri</span>
+                        <div class="review-stars" aria-label="5 estrellas">★★★★★</div>
+                    </div>
+                    <p class="review-text">"Muy buen trabajo, el coche ha quedado perfecto. En mi caso lo he llevado sobre todo por problema de malos olores y he quedado muy contenta."</p>
+                </div>
+                <!-- Card 2 -->
+                <div class="review-card">
+                    <div class="flex justify-between items-start mb-6">
+                        <span class="review-author">Rhizlane Benhamou</span>
+                        <div class="review-stars" aria-label="5 estrellas">★★★★★</div>
+                    </div>
+                    <p class="review-text">"Muy profesional, nos ha hecho limpieza y pulido al coche y ha ido genial, estamos encantados con los resultados. Muy amable y buena persona. Recomendadisimo."</p>
+                </div>
+                <!-- Card 3 -->
+                <div class="review-card">
+                    <div class="flex justify-between items-start mb-6">
+                        <span class="review-author">Xume Taberna</span>
+                        <div class="review-stars" aria-label="5 estrellas">★★★★★</div>
+                    </div>
+                    <p class="review-text">"Un trato excelente y profesional."</p>
+                </div>
+                <!-- Card 4 -->
+                <div class="review-card">
+                    <div class="flex justify-between items-start mb-6">
+                        <span class="review-author">javier gil casado</span>
+                        <div class="review-stars" aria-label="5 estrellas">★★★★★</div>
+                    </div>
+                    <p class="review-text">"Un trato excelente y un trabajo espectacular han dejado mi coche como un espejo."</p>
+                </div>
+                <!-- Card 5 -->
+                <div class="review-card">
+                    <div class="flex justify-between items-start mb-6">
+                        <span class="review-author">Asier Garcia</span>
+                        <div class="review-stars" aria-label="5 estrellas">★★★★★</div>
+                    </div>
+                    <p class="review-text">"Dena prineran. Todo perfecto! Yo volveré a llevar a hacer más cosas que hay que cuidarlo! 🏎️"</p>
+                </div>
+                <!-- Card 6 -->
+                <div class="review-card">
+                    <div class="flex justify-between items-start mb-6">
+                        <span class="review-author">Mikel Pereira</span>
+                        <div class="review-stars" aria-label="5 estrellas">★★★★★</div>
+                    </div>
+                    <p class="review-text">"Sakana Detail IMPRESIONANTE COMO HA QUEDADO MI t4 del 2000, ha quedado nueva, asientos, tapicería, muchas gracias por el servicio, la habéis rejuvenecido, MUY RECOMENDABLE."</p>
+                </div>
+                <!-- Card 7 -->
+                <div class="review-card">
+                    <div class="flex justify-between items-start mb-6">
+                        <span class="review-author">Juan Mari Ruiz</span>
+                        <div class="review-stars" aria-label="4 estrellas">★★★★☆</div>
+                    </div>
+                    <p class="review-text">"Excelente atención y cuidado en los detalles."</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     FOOTER / CONTACT ZONE (Premium Slogan & WhatsApp Restored)
+══════════════════════════════════════════════ -->
+<footer id="contact" aria-labelledby="contact-heading">
+    <div class="section-wrap">
+
+        <div class="section-label anim">
+            <span>// 05 — Contacto</span>
+        </div>
+
+        <!-- HUGE HIGH-CONTRAST SLOGAN -->
+        <div class="mb-16 md:mb-24 anim d1">
+            <h3 class="font-syne font-extrabold text-[clamp(2.8rem,7vw,6.5rem)] uppercase leading-[0.9] tracking-tight text-white">
+                Cada detalle importa.
+            </h3>
+        </div>
+
+        <div class="contact-grid">
+
+            <!-- LEFT: Headline + tagline -->
+            <div>
+                <h2 class="contact-h2 anim d2" id="contact-heading">
+                    Hablemos<br>
+                    de tu<br>
+                    vehículo
+                </h2>
+                <p class="contact-sub anim d3 mt-6 mb-8 text-[0.95rem] text-white/60 leading-relaxed font-mono">
+                    Desde el primer contacto hasta el acabado final, nuestra obsesión es la perfección absoluta. Sin atajos.
+                </p>
+
+                <div class="footer-logo-wrap anim d4 mt-10">
+                    <img src="MULTIMEDIA/592519046_17850217770604656_4832232778873236208_n.jpg"
+                         alt="Sakana Detailing"
+                         class="footer-logo">
+                    <div>
+                        <div style="font-family:'Syne',sans-serif; font-weight:700;
+                                    font-size:.82rem; letter-spacing:.2em; text-transform:uppercase;
+                                    opacity:.65;">Sakana Detailing</div>
+                        <div style="font-family:'JetBrains Mono',monospace; font-size:.58rem;
+                                    letter-spacing:.38em; text-transform:uppercase;
+                                    color:rgba(255,255,255,0.35); margin-top:4px;">
+                            Alsasua, Navarra
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT: Action buttons -->
+            <div class="contact-actions anim d3 flex flex-col gap-4">
+
+                <!-- ◆ WhatsApp Booking (Highly visible, premium action button) -->
+                <a href="https://wa.me/34680765314"
+                   class="btn-wa"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   id="whatsapp-btn"
+                   aria-label="Reservar cita por WhatsApp"
+                   style="display: flex; align-items: center; justify-content: space-between; text-decoration: none;">
+                    <span style="display: flex; align-items: center; gap: 14px;">
+                        <!-- WhatsApp SVG -->
+                        <svg class="btn-wa-icon" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="width: 20px; height: 20px;">
+                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+                        </svg>
+                        <span>Contactar por WhatsApp</span>
+                    </span>
+                    <span class="btn-wa-num font-mono">+34 680 765 314</span>
+                </a>
+
+                <!-- ◆ Email -->
+                <a href="mailto:sakana.detail@gmail.com"
+                   class="btn-line"
+                   id="email-link"
+                   aria-label="Enviar email a Sakana Detailing"
+                   style="display: flex; align-items: center; gap: 14px; text-decoration: none;">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="1.2" aria-hidden="true">
+                        <rect x="2" y="4" width="20" height="16" rx="2"/>
+                        <path d="M2 7l10 7 10-7"/>
+                    </svg>
+                    <span>sakana.detail@gmail.com</span>
+                </a>
+
+                <!-- ◆ Instagram -->
+                <a href="https://instagram.com/sakana.detail"
+                   class="btn-line"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   id="instagram-link"
+                   aria-label="Perfil de Instagram @sakana.detail"
+                   style="display: flex; align-items: center; gap: 14px; text-decoration: none;">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="1.2" aria-hidden="true">
+                        <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+                        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+                        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+                    </svg>
+                    <span>@sakana.detail</span>
+                </a>
+
+            </div>
+        </div>
+
+        <!-- Footer bar -->
+        <div class="footer-bar anim">
+            <span class="footer-copy">© 2026 Sakana Detailing — Todos los derechos reservados</span>
+            <span class="footer-loc">Polígono Ibarrea 1 · Alsasua · Navarra · España</span>
+        </div>
+
+    </div>
+</footer>
+
+<!-- ══════════════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════════════ -->
+<script>
+/* ─────────────────────────────────────────────
+   FRAME SEQUENCE CONFIGURATION
+───────────────────────────────────────────── */
+const TOTAL_FRAMES = 200;
+const FRAMES_DIR   = 'MULTIMEDIA/FRAMES/ezgif-frame-';
+
+function frameSrc(n) {
+    return FRAMES_DIR + String(n).padStart(3, '0') + '.jpg';
+}
+
+/* ─────────────────────────────────────────────
+   CANVAS SETUP
+───────────────────────────────────────────── */
+const canvas = document.getElementById('hero-canvas');
+const ctx    = canvas.getContext('2d', { alpha: false });
+
+let currentFrame = 0;
+const frames = new Array(TOTAL_FRAMES).fill(null);
+
+function resizeCanvas() {
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+    renderFrame(Math.max(0, Math.min(TOTAL_FRAMES - 1, Math.round(currentFrame))));
+}
+
+function renderFrame(idx) {
+    const img = frames[idx];
+    if (!img || !img.complete || !img.naturalWidth) {
+        lastInt = -1; // Reset to allow drawing again once it is fully loaded
+        return;
+    }
+
+    const cW = canvas.width;
+    const cH = canvas.height;
+    const iW = img.naturalWidth;
+    const iH = img.naturalHeight;
+
+    // Object-fit: cover — center-crop
+    const scale    = Math.max(cW / iW, cH / iH);
+    const drawW    = iW * scale;
+    const drawH    = iH * scale;
+    const offsetX  = (cW - drawW) / 2;
+    const offsetY  = (cH - drawH) / 2;
+
+    ctx.drawImage(img, offsetX, offsetY, drawW, drawH);
+}
+
+window.addEventListener('resize', resizeCanvas, { passive: true });
+
+/* ─────────────────────────────────────────────
+   ASYNC FRAME PRELOADING
+───────────────────────────────────────────── */
+let loadedCount  = 0;
+const loaderBar  = document.getElementById('loader-bar');
+const loaderLbl  = document.getElementById('loader-label');
+const loadScreen = document.getElementById('loading-screen');
+let   scrollReady = false;
+
+// Fail-safe timeout: initialize the website after 3.5s regardless of progress
+const preloadTimeout = setTimeout(() => {
+    console.warn("Preloader timed out. Initializing website with loaded frames.");
+    hidePreloader();
+}, 3500);
+
+function hidePreloader() {
+    clearTimeout(preloadTimeout);
+    if (loadScreen) {
+        loadScreen.style.display = 'none';
+    }
+    scrollReady = true;
+    initScrollDrive();
+}
+
+function onLoad() {
+    loadedCount++;
+    const pct = Math.round((loadedCount / TOTAL_FRAMES) * 100);
+    if (loaderBar) loaderBar.style.width = pct + '%';
+    if (loaderLbl) loaderLbl.textContent = 'Cargando — ' + pct + '%';
+
+    // Paint frame 0 as soon as the first image loads
+    if (loadedCount === 1) {
+        resizeCanvas();
+    }
+
+    if (loadedCount >= TOTAL_FRAMES) {
+        hidePreloader();
+    }
+}
+
+(function preload() {
+    for (let i = 0; i < TOTAL_FRAMES; i++) {
+        const img = new Image();
+        const src = frameSrc(i + 1);
+        
+        img.onload = function() {
+            onLoad();
+        };
+        
+        img.onerror = function() {
+            console.error("Failed to load frame:", src);
+            onLoad(); // fail-safe: increment counter to prevent loader freeze
+        };
+        
+        img.src = src;
+        frames[i] = img;
+    }
+    resizeCanvas();
+})();
+
+/* ═══════════════════════════════════════════════════════════════
+   CINEMATIC HERO SCROLL DRIVE — AUTOMATED BIDIRECTIONAL TRANSITION
+   ───────────────────────────────────────────────────────────────
+   Architecture:
+   • Hero container has height defined in CSS (100vh) inline override (260vh).
+   • Scrolling down past 2px at the top triggers an automatic,
+     rapid transition to the '#services' section.
+   • Back-scrolling past the top of the services section glides
+     the page back to the top of the hero while reversing canvas frames.
+   • Click navigation links intercept regular triggers to avoid stutters.
+ ═══════════════════════════════════════════════════════════════ */
+
+// Register GSAP plugins with safety guard
+if (typeof gsap !== 'undefined') {
+    try {
+        gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
+    } catch (e) {
+        console.error("GSAP plugin registration failed:", e);
+    }
+} else {
+    console.warn("GSAP is not defined. Animations and smooth scrolling will fall back to native browser physics.");
+}
+
+const frameBar      = document.getElementById('frame-bar');
+const scrollInd     = document.getElementById('scroll-ind');
+const mainNav       = document.getElementById('main-nav');
+
+let lastInt = -1; // last integer frame index drawn
+let isTransitioning = false; // guard to prevent transition loops
+
+// LERP Rendering Engine Variables
+let targetFrame = 0;
+const LERP_EASE = 0.08; // smooth momentum easing factor
+
+function getServicesTop() {
+    const servicesEl = document.getElementById('services');
+    return servicesEl ? servicesEl.offsetTop : window.innerHeight * 2;
+}
+
+// Continuous requestAnimationFrame Render Loop
+function renderLoop() {
+    const sTop = getServicesTop();
+    if (sTop > 0) {
+        const progress = Math.max(0, Math.min(1, window.scrollY / sTop));
+        targetFrame = progress * (TOTAL_FRAMES - 1);
+    } else {
+        targetFrame = 0;
+    }
+
+    // Linear Interpolation (LERP)
+    currentFrame += (targetFrame - currentFrame) * LERP_EASE;
+
+    const idx = Math.max(0, Math.min(TOTAL_FRAMES - 1, Math.round(currentFrame)));
+    if (idx !== lastInt) {
+        lastInt = idx;
+        renderFrame(idx);
+    }
+
+    // Update progress elements smoothly based on current interpolated frame
+    const progressPercent = (currentFrame / (TOTAL_FRAMES - 1)) * 100;
+    if (frameBar) frameBar.style.width = progressPercent.toFixed(2) + '%';
+    if (scrollInd) scrollInd.style.opacity = currentFrame > 10 ? '0' : '1';
+
+    requestAnimationFrame(renderLoop);
+}
+
+let lastScrollY = window.scrollY;
+
+// ── Automated Scroll Gesture Transitions ───────────────────────
+window.addEventListener('scroll', () => {
+    const currentScrollY = window.scrollY;
+    const sTop = getServicesTop();
+    
+    // Header scrolled glass style
+    if (currentScrollY > 80) {
+        if (mainNav) mainNav.classList.add('scrolled');
+    } else {
+        if (mainNav) mainNav.classList.remove('scrolled');
+    }
+
+    if (isTransitioning) {
+        lastScrollY = currentScrollY;
+        return;
+    }
+
+    // Scroll Down from Top Trigger
+    if (lastScrollY <= 2 && currentScrollY > 2) {
+        triggerTransitionDown(sTop);
+    }
+    // Scroll Up to Top Trigger
+    else if (currentScrollY < sTop - 15 && lastScrollY >= sTop - 15) {
+        triggerTransitionUp();
+    }
+
+    lastScrollY = currentScrollY;
+}, { passive: true });
+
+function triggerTransitionDown(sTop) {
+    if (isTransitioning) return;
+    isTransitioning = true;
+    
+    if (typeof gsap !== 'undefined') {
+        gsap.killTweensOf(window);
+        gsap.to(window, {
+            scrollTo: { y: sTop, autoKill: false },
+            duration: 1.3,
+            ease: "power2.out",
+            onComplete: () => {
+                isTransitioning = false;
+                lastScrollY = window.scrollY;
+            }
+        });
+    } else {
+        // Fallback to native window.scrollTo smooth behavior
+        window.scrollTo({ top: sTop, behavior: 'smooth' });
+        setTimeout(() => {
+            isTransitioning = false;
+            lastScrollY = window.scrollY;
+        }, 800);
+    }
+}
+
+function triggerTransitionUp() {
+    if (isTransitioning) return;
+    isTransitioning = true;
+    
+    if (typeof gsap !== 'undefined') {
+        gsap.killTweensOf(window);
+        gsap.to(window, {
+            scrollTo: { y: 0, autoKill: false },
+            duration: 1.3,
+            ease: "power2.out",
+            onComplete: () => {
+                isTransitioning = false;
+                lastScrollY = window.scrollY;
+            }
+        });
+    } else {
+        // Fallback to native window.scrollTo smooth behavior
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        setTimeout(() => {
+            isTransitioning = false;
+            lastScrollY = window.scrollY;
+        }, 800);
+    }
+}
+
+function initScrollDrive() {
+    renderFrame(0);
+    requestAnimationFrame(renderLoop);
+}
+
+/* ─────────────────────────────────────────────
+   CUSTOM CURSOR — smooth magnetic ring
+───────────────────────────────────────────── */
+const cursorDot  = document.getElementById('cursor-dot');
+const cursorRing = document.getElementById('cursor-ring');
+
+let mX = window.innerWidth / 2;
+let mY = window.innerHeight / 2;
+let rX = mX, rY = mY;
+
+document.addEventListener('mousemove', e => {
+    mX = e.clientX;
+    mY = e.clientY;
+    if (cursorDot) {
+        cursorDot.style.left = mX + 'px';
+        cursorDot.style.top  = mY + 'px';
+    }
+}, { passive: true });
+
+(function loopCursor() {
+    rX += (mX - rX) * 0.1;
+    rY += (mY - rY) * 0.1;
+    if (cursorRing) {
+        cursorRing.style.left = rX + 'px';
+        cursorRing.style.top  = rY + 'px';
+    }
+    requestAnimationFrame(loopCursor);
+})();
+
+// Expand ring on interactive elements
+const interactiveEls = document.querySelectorAll(
+    'a, button, .svc-card, .nav-link, .nav-cta, .loc-block'
+);
+interactiveEls.forEach(el => {
+    el.addEventListener('mouseenter', () => {
+        if (cursorRing) cursorRing.classList.add('expand');
+        if (cursorDot) cursorDot.classList.add('hide');
+    });
+    el.addEventListener('mouseleave', () => {
+        if (cursorRing) cursorRing.classList.remove('expand');
+        if (cursorDot) cursorDot.classList.remove('hide');
+    });
+});
+
+/* ─────────────────────────────────────────────
+   INTERSECTION OBSERVER — STAGGER ANIMATIONS
+───────────────────────────────────────────── */
+const animEls = document.querySelectorAll('.anim');
+
+const io = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            io.unobserve(entry.target);
+        }
+    });
+}, { threshold: 0.08, rootMargin: '0px 0px -36px 0px' });
+
+animEls.forEach(el => io.observe(el));
+
+/* ─────────────────────────────────────────────
+   GSAP PREMIUM SMOOTH SCROLL FOR HASH LINKS
+───────────────────────────────────────────── */
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+        const target = a.getAttribute('href');
+        const targetEl = document.querySelector(target);
+        if (targetEl) {
+            e.preventDefault();
+            isTransitioning = true;
+            
+            const targetY = targetEl.offsetTop;
+            
+            if (typeof gsap !== 'undefined') {
+                gsap.killTweensOf(window);
+                gsap.to(window, {
+                    scrollTo: { y: targetY, autoKill: false },
+                    duration: 1.2,
+                    ease: "power2.out",
+                    onComplete: () => {
+                        isTransitioning = false;
+                        lastScrollY = window.scrollY;
+                    }
+                });
+            } else {
+                targetEl.scrollIntoView({ behavior: 'smooth' });
+                setTimeout(() => {
+                    isTransitioning = false;
+                    lastScrollY = window.scrollY;
+                }, 800);
+            }
+        }
+    });
+});
+</script>
+</body>
+</html>
