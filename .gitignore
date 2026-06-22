@@ -1,12 +1,30 @@
-# OS files
-Thumbs.db
-ehthumbs.db
-Desktop.ini
+# deps
+/node_modules
+/.pnp
+.pnp.js
+
+# next
+/.next/
+/out/
+
+# env
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# misc
 .DS_Store
+*.pem
+npm-debug.log*
+tsconfig.tsbuildinfo
 
-# Heavy redundant ZIPs
-MULTIMEDIA/FRAMES.zip
+# claude code (session data / memory)
+.claude/
 
-# Temporary/Cache files
-.gemini/
-*.log
+# netlify local state
+.netlify/
+
+# fotos fuente originales (ya están en public/images/)
+FOTOS GALERIA/
