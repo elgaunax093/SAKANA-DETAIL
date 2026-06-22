@@ -12,7 +12,6 @@ import FAQSection from '@/components/FAQSection'
 import ContactoSection from '@/components/ContactoSection'
 import Footer from '@/components/Footer'
 import FloatingWhatsApp from '@/components/FloatingWhatsApp'
-import CustomCursor from '@/components/CustomCursor'
 
 export default function Home() {
   return (
@@ -31,7 +30,6 @@ export default function Home() {
       <ContactoSection />
       <Footer />
       <FloatingWhatsApp />
-      <CustomCursor />
     </main>
   )
 }

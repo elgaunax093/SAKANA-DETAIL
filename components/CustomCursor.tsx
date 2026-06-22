@@ -1,124 +1,137 @@
 'use client'
-import { useEffect, useRef, useState } from 'react'
-import { motion, useMotionValue, useSpring, useVelocity } from 'framer-motion'
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  AJUSTES DEL CURSOR — edita solo estos valores
-const CURSOR_SIZE = 10 // px — diámetro del punto
-const SPRING_CONFIG = { stiffness: 180, damping: 22, mass: 0.4 }
-const STRETCH_STRENGTH = 0.018
-const VELOCITY_THRESHOLD = 5 // px/frame — por debajo, sin deformación
-const MAX_STRETCH = 0.45
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+import { useEffect, useCallback } from 'react'
+import { motion, useMotionValue, useSpring } from 'framer-motion'
 
-// Selectores que activan el efecto hover del cursor.
-// Excluye inputs de texto/textarea: esos ya usan cursor:text (ver globals.css).
+// ─── Ajusta solo estos valores ────────────────────────────────────────────────
+const CURSOR_SIZE = 10        // diámetro base (px)
+const MAX_STRETCH  = 0.35     // deformación máxima por velocidad (35 %)
+const SPEED_SCALE  = 2200     // velocidad (px/s) a la que se alcanza MAX_STRETCH
+const HOVER_SCALE  = 1.8      // tamaño relativo al pasar sobre interactivos
+// ──────────────────────────────────────────────────────────────────────────────
+
 const INTERACTIVE =
-  'a, button, [role="button"], label, select, ' +
-  'input[type="submit"], input[type="button"], input[type="reset"], [data-cursor-hover]'
+  'a, button, [role="button"], input, textarea, select, [data-cursor-hover]'
 
+/**
+ * CustomCursor — cursor de alto rendimiento:
+ *
+ * • Cero re-renders: la posición del mouse se escribe directamente en
+ *   MotionValues; Framer Motion los empuja al DOM vía rAF interno.
+ * • Dos springs: posición (stiffness 700 → snappy) y hover-scale (500 → ágil).
+ * • Squash & stretch directo en rAF a partir de .getVelocity(), sin useState.
+ * • Opacidad controlada por MotionValue (sin setState) → cero re-renders.
+ * • Gateado con (pointer: fine) para no activarse en pantallas táctiles.
+ */
 export default function CustomCursor() {
-  const [visible, setVisible] = useState(false)
-  const [hovering, setHovering] = useState(false)
+  // Posición raw del ratón
+  const mouseX      = useMotionValue(-CURSOR_SIZE / 2)
+  const mouseY      = useMotionValue(-CURSOR_SIZE / 2)
+  const cursorAlpha = useMotionValue(0)
 
-  const mouseX = useMotionValue(0)
-  const mouseY = useMotionValue(0)
-  const springX = useSpring(mouseX, SPRING_CONFIG)
-  const springY = useSpring(mouseY, SPRING_CONFIG)
-  const velocityX = useVelocity(springX)
-  const velocityY = useVelocity(springY)
+  // Spring de posición: stiffness alta = sigue el ratón sin lag apreciable
+  const cursorX = useSpring(mouseX, { stiffness: 700, damping: 38, mass: 0.5 })
+  const cursorY = useSpring(mouseY, { stiffness: 700, damping: 38, mass: 0.5 })
 
-  const scaleX = useMotionValue(1)
-  const scaleY = useMotionValue(1)
-  const rotate = useMotionValue(0)
+  // Spring de escala para hover (animación limpia sin blur)
+  const scaleTarget = useMotionValue(1)
+  const scale       = useSpring(scaleTarget, { stiffness: 500, damping: 30 })
 
-  // Seguimiento del ratón — solo en dispositivos con puntero fino
+  // Squash & stretch — escritura directa desde rAF, no pasan por React
+  const stretchX = useMotionValue(1)
+  const stretchY = useMotionValue(1)
+  const angle    = useMotionValue(0)
+
+  // ─── Handlers de evento ────────────────────────────────────────────────────
+
+  const onMove = useCallback((e: PointerEvent) => {
+    mouseX.set(e.clientX - CURSOR_SIZE / 2)
+    mouseY.set(e.clientY - CURSOR_SIZE / 2)
+    if (cursorAlpha.get() === 0) cursorAlpha.set(1)
+  }, [mouseX, mouseY, cursorAlpha])
+
+  const onOver = useCallback((e: PointerEvent) => {
+    if ((e.target as Element).closest(INTERACTIVE)) scaleTarget.set(HOVER_SCALE)
+  }, [scaleTarget])
+
+  const onOut = useCallback((e: PointerEvent) => {
+    if ((e.target as Element).closest(INTERACTIVE)) scaleTarget.set(1)
+  }, [scaleTarget])
+
+  const onLeave  = useCallback(() => cursorAlpha.set(0), [cursorAlpha])
+  const onEnter  = useCallback(() => cursorAlpha.set(1), [cursorAlpha])
+
+  // ─── Efecto principal ──────────────────────────────────────────────────────
+
   useEffect(() => {
     if (!window.matchMedia('(pointer: fine)').matches) return
 
-    const onMove = (e: MouseEvent) => {
-      mouseX.set(e.clientX - CURSOR_SIZE / 2)
-      mouseY.set(e.clientY - CURSOR_SIZE / 2)
-      setVisible(v => v || true)
-    }
-    const hide = () => setVisible(false)
-    const show = () => setVisible(true)
+    window.addEventListener('pointermove', onMove,  { passive: true })
+    window.addEventListener('pointerover', onOver,  { passive: true })
+    window.addEventListener('pointerout',  onOut,   { passive: true })
+    document.addEventListener('pointerleave', onLeave)
+    document.addEventListener('pointerenter', onEnter)
 
-    document.addEventListener('mousemove', onMove)
-    document.addEventListener('mouseleave', hide)
-    document.addEventListener('mouseenter', show)
-    return () => {
-      document.removeEventListener('mousemove', onMove)
-      document.removeEventListener('mouseleave', hide)
-      document.removeEventListener('mouseenter', show)
-    }
-  }, [mouseX, mouseY])
-
-  // Hover en interactivos — delegado en document, cubre elementos dinámicos
-  useEffect(() => {
-    if (!window.matchMedia('(pointer: fine)').matches) return
-
-    const onOver = (e: MouseEvent) => {
-      if ((e.target as Element).closest(INTERACTIVE)) setHovering(true)
-    }
-    const onOut = (e: MouseEvent) => {
-      if ((e.target as Element).closest(INTERACTIVE)) setHovering(false)
-    }
-    document.addEventListener('mouseover', onOver)
-    document.addEventListener('mouseout', onOut)
-    return () => {
-      document.removeEventListener('mouseover', onOver)
-      document.removeEventListener('mouseout', onOut)
-    }
-  }, [])
-
-  // Squash & stretch — deformación direccional según la velocidad
-  useEffect(() => {
-    if (!window.matchMedia('(pointer: fine)').matches) return
-
-    let frame: number
-    const update = () => {
-      const vx = velocityX.get()
-      const vy = velocityY.get()
+    // Squash & stretch: lee velocidad del spring (no del mouse), así la
+    // deformación es proporcional al movimiento real del cursor en pantalla.
+    let raf: number
+    const tick = () => {
+      const vx    = cursorX.getVelocity()
+      const vy    = cursorY.getVelocity()
       const speed = Math.hypot(vx, vy)
+      const s     = Math.min(speed / SPEED_SCALE, 1) * MAX_STRETCH
 
-      if (speed > VELOCITY_THRESHOLD) {
-        rotate.set(Math.atan2(vy, vx) * (180 / Math.PI))
-        const stretch = Math.min(speed * STRETCH_STRENGTH, MAX_STRETCH)
-        scaleX.set(1 + stretch)
-        scaleY.set(1 - stretch * 0.4)
-      } else {
-        scaleX.set(1)
-        scaleY.set(1)
-      }
-      frame = requestAnimationFrame(update)
+      stretchX.set(1 + s)
+      stretchY.set(1 - s * 0.5)
+
+      if (speed > 40) angle.set((Math.atan2(vy, vx) * 180) / Math.PI)
+
+      raf = requestAnimationFrame(tick)
     }
-    frame = requestAnimationFrame(update)
-    return () => cancelAnimationFrame(frame)
-  }, [velocityX, velocityY, scaleX, scaleY, rotate])
+    raf = requestAnimationFrame(tick)
+
+    return () => {
+      window.removeEventListener('pointermove', onMove)
+      window.removeEventListener('pointerover', onOver)
+      window.removeEventListener('pointerout',  onOut)
+      document.removeEventListener('pointerleave', onLeave)
+      document.removeEventListener('pointerenter', onEnter)
+      cancelAnimationFrame(raf)
+    }
+  }, [cursorX, cursorY, stretchX, stretchY, angle, onMove, onOver, onOut, onLeave, onEnter])
+
+  // ─── Render ────────────────────────────────────────────────────────────────
 
   return (
     <motion.div
       aria-hidden="true"
       style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        width: CURSOR_SIZE,
-        height: CURSOR_SIZE,
-        borderRadius: '50%',
-        background: 'rgb(var(--text-primary))',
+        // Layout — fixed, fuera del flujo, no afecta al resto del DOM
+        position:      'fixed',
+        top:           0,
+        left:          0,
+        width:         CURSOR_SIZE,
+        height:        CURSOR_SIZE,
+        borderRadius:  '50%',
         pointerEvents: 'none',
-        zIndex: 999999,
+        zIndex:        999999,
+
+        // Color reactivo al tema: blanco en dark, casi-negro en light
+        background: 'rgb(var(--text-primary))',
+
+        // Aceleración por hardware — el browser mueve este div solo via GPU
         willChange: 'transform',
-        x: springX,
-        y: springY,
-        scaleX,
-        scaleY,
-        rotate,
+
+        // Transforms — todos son MotionValues: el DOM se actualiza vía rAF
+        // sin que React vuelva a renderizar
+        x:       cursorX,
+        y:       cursorY,
+        scaleX:  stretchX,
+        scaleY:  stretchY,
+        rotate:  angle,
+        scale,
+        opacity: cursorAlpha,
       }}
-      animate={{ opacity: visible ? (hovering ? 0.6 : 1) : 0 }}
-      transition={{ opacity: { duration: 0.2 } }}
     />
   )
 }
